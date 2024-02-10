@@ -22,8 +22,8 @@ pub mod anchor_vesting_2024 {
     }
     
     // Open a new Vesting account and deposit equivalent vested tokens to vault
-    pub fn create_vesting(ctx: Context<CreateVesting>, timeout: i64, amount: u64) -> Result<()> {
-        ctx.accounts.create_vesting(timeout, amount, ctx.bumps.vest)
+    pub fn create_vesting(ctx: Context<CreateVesting>, maturation: i64, amount: u64) -> Result<()> {
+        ctx.accounts.create_vesting(maturation, amount, ctx.bumps.vest)
     }
 
     // Claim from and close a Vesting account

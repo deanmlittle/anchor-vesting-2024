@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 pub struct Vesting {
     pub vester_ta: Pubkey,
     pub amount: u64,
-    pub timeout: i64,
+    pub maturation: i64,
     pub bump: u8
 }
 

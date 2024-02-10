@@ -30,9 +30,9 @@ pub struct ClaimVesting<'info> {
     #[account(
         mut,
         close = vester,
-        constraint = Clock::get()?.unix_timestamp >= vest.timeout @ VestingError::NotMatured,
+        constraint = Clock::get()?.unix_timestamp >= vest.maturation @ VestingError::NotFullyVested,
         has_one = vester_ta, // This check is arbitrary, as ATA is baked into the PDA
-        seeds = [b"vest", vester_ta.key().as_ref(), vest.timeout.to_le_bytes().as_ref()],
+        seeds = [b"vest", vester_ta.key().as_ref(), vest.maturation.to_le_bytes().as_ref()],
         bump = vest.bump
     )]
     vest: Account<'info, Vesting>,    

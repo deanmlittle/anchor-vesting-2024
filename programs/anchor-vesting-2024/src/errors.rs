@@ -2,8 +2,8 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum VestingError {
-    #[msg("Locktime not matured yet")]
-    NotMatured,
+    #[msg("Not fully vested yet")]
+    NotFullyVested,
     #[msg("Vault is not in surplus")]
     NotInSurplus,
     #[msg("Vesting finalized")]

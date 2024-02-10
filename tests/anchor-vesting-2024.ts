@@ -34,6 +34,7 @@ describe("anchor-vesting-2024", () => {
   const seed = new BN(randomBytes(8));
   const NOW = new BN(Math.floor(new Date().getTime() / 1000));
   const LATER = NOW.add(new BN(1000));
+  const EVEN_LATER = LATER.add(new BN(1000));
 
   const admin = Keypair.generate();
   const vester = Keypair.generate();
@@ -64,6 +65,15 @@ describe("anchor-vesting-2024", () => {
       Buffer.from("vest"), 
       vesterTa.toBuffer(),
       LATER.toBuffer('le', 8)
+    ],
+    program.programId
+  )[0];
+
+  const vestEvenLater = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("vest"), 
+      vesterTa.toBuffer(),
+      EVEN_LATER.toBuffer('le', 8)
     ],
     program.programId
   )[0];
@@ -147,6 +157,16 @@ describe("anchor-vesting-2024", () => {
       .then(log);
   });
 
+  it("Create another unmatured vest", async () => {
+    const tx = await program.methods
+      .createVesting(EVEN_LATER, new BN(1337e6))
+      .accounts({...accounts, vest: vestEvenLater})
+      .signers([admin])
+      .rpc()
+      .then(confirm)
+      .then(log);
+  });
+
   it("Fail to claim a vest before finalization", async () => {
     try { 
       const tx = await program.methods
@@ -205,6 +225,20 @@ describe("anchor-vesting-2024", () => {
       .rpc()
       .then(confirm)
       .then(log);
+  });
+
+  it("Fail to claim an unmatured vest", async () => {
+    try {
+      const tx = await program.methods
+        .claimVesting()
+        .accounts({...accounts, vest: vestEvenLater})
+        .signers([vester])
+        .rpc()
+        .then(confirm)
+        .then(log);
+    } catch(e) {
+      assert(e.error?.errorCode?.code === "NotFullyVested")
+    }
   });
 
   it("Withdraw surplus tokens", async () => {

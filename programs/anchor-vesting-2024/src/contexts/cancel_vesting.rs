@@ -20,7 +20,7 @@ pub struct CancelVesting<'info> {
     #[account(
         mut,
         close = admin,
-        seeds = [b"vest", vest.vester_ta.key().as_ref(), vest.timeout.to_le_bytes().as_ref()],
+        seeds = [b"vest", vest.vester_ta.key().as_ref(), vest.maturation.to_le_bytes().as_ref()],
         bump = vest.bump
     )]
     vest: Account<'info, Vesting>,    
