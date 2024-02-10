@@ -23,7 +23,7 @@ pub struct Initialize<'info> {
         init,
         payer = admin,
         space = Config::INIT_SPACE,
-        seeds = [b"config", admin.key().key().as_ref(), mint.key().as_ref(), seed.to_le_bytes().as_ref()],
+        seeds = [b"config", admin.key().as_ref(), mint.key().as_ref(), seed.to_le_bytes().as_ref()],
         bump
     )]
     config: Account<'info, Config>,

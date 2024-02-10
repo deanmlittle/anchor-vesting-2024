@@ -10,8 +10,6 @@ pub enum VestingError {
     VestingFinalized,
     #[msg("Vesting unfinalized")]
     VestingUnfinalized,
-    #[msg("Insufficient funds")]
-    InsufficientFunds,
     #[msg("Integer overflow")]
     Overflow,
     #[msg("Integer underflow")]

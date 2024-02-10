@@ -170,21 +170,6 @@ describe("anchor-vesting-2024", () => {
       .then(log);
   });
 
-  it("Fail to finalize vest due to token balance", async () => {
-    try {
-      const tx = await program.methods
-      .finalize()
-      .accounts({...accounts})
-      .signers([admin])
-      .rpc()
-      .then(confirm)
-      .then(log);
-      throw new Error("Shouldn't have made it to here")
-    } catch(e) {
-      assert(e.error?.errorCode?.code === "InsufficientFunds")
-    }
-  });
-
   it("Deposits vesting tokens", async () => {
     const tx = new Transaction();
     tx.add(createTransferCheckedInstruction(

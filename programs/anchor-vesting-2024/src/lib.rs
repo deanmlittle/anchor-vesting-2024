@@ -17,6 +17,11 @@ pub mod anchor_vesting_2024 {
     }
 
     // Finalize a Config, disabling any further creation or cancellation of Vest accounts
+    pub fn lock(ctx: Context<Finalize>) -> Result<()> {
+        ctx.accounts.finalize()
+    }
+
+    // Finalize a Config, disabling any further creation or cancellation of Vest accounts
     pub fn finalize(ctx: Context<Finalize>) -> Result<()> {
         ctx.accounts.finalize()
     }
@@ -42,14 +47,3 @@ pub mod anchor_vesting_2024 {
     }
 
 }
-
-// #[derive(Accounts)]
-// pub struct OpenVault<'info> {
-//     #[account(mut)]
-//     admin: Signer<'info>,
-//     mint: InterfaceAccount<'info, Mint>,
-//     vault: InterfaceAccount<'info, TokenAccount>,
-//     config: Account<'info, VestingConfig>,
-//     token_program: Interface<'info, TokenInterface>,
-//     system_program: Program<'info, System>
-// }
