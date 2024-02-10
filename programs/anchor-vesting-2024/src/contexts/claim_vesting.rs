@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}};
 
-use crate::{errors::VestingError, state::{Config, Vest}};
+use crate::{errors::VestingError, state::{Config, Vesting}};
 
 #[derive(Accounts)]
-pub struct ClaimVest<'info> {
+pub struct ClaimVesting<'info> {
     #[account(mut)]
     vester: Signer<'info>,
     mint: InterfaceAccount<'info, Mint>,
@@ -30,19 +30,19 @@ pub struct ClaimVest<'info> {
     #[account(
         mut,
         close = vester,
-        constraint = Clock::get()?.unix_timestamp >= vest.timeout @ VestingError::LocktimeNotExpired,
+        constraint = Clock::get()?.unix_timestamp >= vest.timeout @ VestingError::NotMatured,
         has_one = vester_ta, // This check is arbitrary, as ATA is baked into the PDA
         seeds = [b"vest", vester_ta.key().as_ref(), vest.timeout.to_le_bytes().as_ref()],
         bump = vest.bump
     )]
-    vest: Account<'info, Vest>,    
+    vest: Account<'info, Vesting>,    
     associated_token_program: Program<'info, AssociatedToken>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>
 }
 
-impl<'info> ClaimVest<'info> {
-    pub fn close_vest(&mut self) -> Result<()> {
+impl<'info> ClaimVesting<'info> {
+    pub fn close_vesting(&mut self) -> Result<()> {
         self.config.vested = self.config.vested.checked_sub(self.vest.amount).ok_or(VestingError::Underflow)?;
         Ok(())
     }

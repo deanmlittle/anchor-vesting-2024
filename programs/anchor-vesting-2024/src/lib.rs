@@ -16,29 +16,24 @@ pub mod anchor_vesting_2024 {
         ctx.accounts.initialize(seed, ctx.bumps.config)
     }
 
-    // Finalize a Config, disabling any further creation or cancellation of Vest accounts
-    pub fn lock(ctx: Context<Finalize>) -> Result<()> {
-        ctx.accounts.finalize()
-    }
-
-    // Finalize a Config, disabling any further creation or cancellation of Vest accounts
+    // Finalize a Config, disabling any further creation or cancellation of Vesting accounts
     pub fn finalize(ctx: Context<Finalize>) -> Result<()> {
         ctx.accounts.finalize()
     }
     
-    // Open a new Vest account and deposit equivalent vested tokens to vault
-    pub fn create_vest(ctx: Context<CreateVest>, timeout: i64, amount: u64) -> Result<()> {
-        ctx.accounts.create_vest(timeout, amount, ctx.bumps.vest)
+    // Open a new Vesting account and deposit equivalent vested tokens to vault
+    pub fn create_vesting(ctx: Context<CreateVesting>, timeout: i64, amount: u64) -> Result<()> {
+        ctx.accounts.create_vesting(timeout, amount, ctx.bumps.vest)
     }
 
-    // Claim from and close a Vest account
-    pub fn claim_vest(ctx: Context<ClaimVest>) -> Result<()> {
-        ctx.accounts.close_vest()
+    // Claim from and close a Vesting account
+    pub fn claim_vesting(ctx: Context<ClaimVesting>) -> Result<()> {
+        ctx.accounts.close_vesting()
     }
 
-    // Cancel and close a Vest account for a non-finalized Config
-    pub fn cancel_vest(ctx: Context<CancelVest>) -> Result<()> {
-        ctx.accounts.cancel_vest()
+    // Cancel and close a Vesting account for a non-finalized Config
+    pub fn cancel_vesting(ctx: Context<CancelVesting>) -> Result<()> {
+        ctx.accounts.cancel_vesting()
     }
 
     // Allow admin to withdraw surplus tokens in excess of total vested amount

@@ -1,11 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
-use crate::{errors::VestingError, state::{Config, Vest}};
+use crate::{errors::VestingError, state::{Config, Vesting}};
 
 #[derive(Accounts)]
 #[instruction(timeout: i64)]
-pub struct CreateVest<'info> {
+pub struct CreateVesting<'info> {
     #[account(mut)]
     admin: Signer<'info>,
     mint: InterfaceAccount<'info, Mint>,
@@ -27,21 +27,21 @@ pub struct CreateVest<'info> {
         init,
         payer = admin,
         constraint = println!("{:?}", timeout.to_le_bytes()) == (),
-        space = Vest::INIT_SPACE,
+        space = Vesting::INIT_SPACE,
         seeds = [b"vest", vester_ta.key().as_ref(), timeout.to_le_bytes().as_ref()],
         bump
     )]
-    vest: Account<'info, Vest>,
+    vest: Account<'info, Vesting>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>
 }
 
-impl<'info> CreateVest<'info> {
-    pub fn create_vest(&mut self, timeout: i64, amount: u64, bump: u8) -> Result<()> {
+impl<'info> CreateVesting<'info> {
+    pub fn create_vesting(&mut self, timeout: i64, amount: u64, bump: u8) -> Result<()> {
         // Add to total vested amount
         self.config.vested = self.config.vested.checked_add(amount).ok_or(VestingError::Overflow)?;
 
-        self.vest.set_inner(Vest {
+        self.vest.set_inner(Vesting {
             vester_ta: self.vester_ta.key(),
             amount,
             timeout,

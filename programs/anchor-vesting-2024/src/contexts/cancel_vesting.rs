@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 
-use crate::{errors::VestingError, state::{Config, Vest}};
+use crate::{errors::VestingError, state::{Config, Vesting}};
 
 #[derive(Accounts)]
-pub struct CancelVest<'info> {
+pub struct CancelVesting<'info> {
     #[account(mut)]
     admin: Signer<'info>,
     mint: InterfaceAccount<'info, Mint>,
@@ -23,12 +23,12 @@ pub struct CancelVest<'info> {
         seeds = [b"vest", vest.vester_ta.key().as_ref(), vest.timeout.to_le_bytes().as_ref()],
         bump = vest.bump
     )]
-    vest: Account<'info, Vest>,    
+    vest: Account<'info, Vesting>,    
     system_program: Program<'info, System>
 }
 
-impl<'info> CancelVest<'info> {
-    pub fn cancel_vest(&mut self) -> Result<()> {
+impl<'info> CancelVesting<'info> {
+    pub fn cancel_vesting(&mut self) -> Result<()> {
         self.config.vested = self.config.vested.checked_sub(self.vest.amount).ok_or(VestingError::Underflow)?;
         Ok(())
     }

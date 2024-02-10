@@ -70,12 +70,14 @@ describe("anchor-vesting-2024", () => {
 
   const accounts = {
     admin: admin.publicKey,
+    payer: admin.publicKey,
     mint: mint.publicKey,
     config,
     vault,
     vester: vester.publicKey,
     vesterTa,
     adminAta,
+    recovery: adminAta,
     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     tokenProgram: TOKEN_2022_PROGRAM_ID,
     systemProgram: SystemProgram.programId
@@ -125,7 +127,7 @@ describe("anchor-vesting-2024", () => {
 
   it("Create a matured vest", async () => {
     const tx = await program.methods
-      .createVest(NOW, new BN(1337e6))
+      .createVesting(NOW, new BN(1337e6))
       .accounts({...accounts, vest: vestNow})
       .signers([admin])
       .rpc({
@@ -137,7 +139,7 @@ describe("anchor-vesting-2024", () => {
 
   it("Create an unmatured vest", async () => {
     const tx = await program.methods
-      .createVest(LATER, new BN(1337e6))
+      .createVesting(LATER, new BN(1337e6))
       .accounts({...accounts, vest: vestLater})
       .signers([admin])
       .rpc()
@@ -148,7 +150,7 @@ describe("anchor-vesting-2024", () => {
   it("Fail to claim a vest before finalization", async () => {
     try { 
       const tx = await program.methods
-        .claimVest()
+        .claimVesting()
         .accounts({...accounts, vest: vestNow})
         .signers([vester])
         .rpc()
@@ -162,7 +164,7 @@ describe("anchor-vesting-2024", () => {
 
   it("Cancel a vest", async () => {
     const tx = await program.methods
-      .cancelVest()
+      .cancelVesting()
       .accounts({...accounts, vest: vestLater})
       .signers([admin])
       .rpc()
@@ -197,7 +199,7 @@ describe("anchor-vesting-2024", () => {
 
   it("Claim a vest after activation", async () => {
     const tx = await program.methods
-      .claimVest()
+      .claimVesting()
       .accounts({...accounts, vest: vestNow})
       .signers([vester])
       .rpc()

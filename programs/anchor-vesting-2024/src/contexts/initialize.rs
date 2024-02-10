@@ -18,6 +18,12 @@ pub struct Initialize<'info> {
         associated_token::token_program = token_program
     )]
     vault: InterfaceAccount<'info, TokenAccount>,
+    // Set a recovery address for recovering surplus funds from the contract
+    #[account(
+        token::mint = mint,
+        token::token_program = token_program
+    )]
+    recovery: InterfaceAccount<'info, TokenAccount>,
     // Initialize a vesting config for a specific admin, mint and seed
     #[account(
         init,
@@ -37,6 +43,7 @@ impl<'info> Initialize<'info> {
         self.config.set_inner(Config {
             mint: self.mint.key(),
             admin: self.admin.key(),
+            recovery: self.recovery.key(),
             vested: 0,
             finalized: false,
             seed,

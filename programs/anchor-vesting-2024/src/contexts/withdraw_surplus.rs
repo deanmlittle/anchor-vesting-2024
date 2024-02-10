@@ -6,15 +6,13 @@ use crate::{errors::VestingError, state::Config};
 #[derive(Accounts)]
 pub struct WithdrawSurplus<'info> {
     #[account(mut)]
-    admin: Signer<'info>,
+    payer: Signer<'info>,
     #[account(
-        init_if_needed,
-        payer = admin,
-        associated_token::mint = mint,
-        associated_token::authority = admin,
-        associated_token::token_program = token_program
+        mut,
+        token::mint = mint,
+        token::token_program = token_program
     )]
-    admin_ata: InterfaceAccount<'info, TokenAccount>,
+    recovery: InterfaceAccount<'info, TokenAccount>,
     mint: InterfaceAccount<'info, Mint>,
     #[account(
         mut,
@@ -26,7 +24,8 @@ pub struct WithdrawSurplus<'info> {
     #[account(
         mut,
         constraint = vault.amount > config.vested @ VestingError::NotInSurplus,
-        seeds = [b"config", admin.key().as_ref(), mint.key().as_ref(), config.seed.to_le_bytes().as_ref()],
+        has_one = recovery,
+        seeds = [b"config", config.admin.key().as_ref(), mint.key().as_ref(), config.seed.to_le_bytes().as_ref()],
         bump = config.bump
     )]
     config: Account<'info, Config>,
@@ -55,7 +54,7 @@ impl<'info> WithdrawSurplus<'info> {
             self.token_program.to_account_info(),
             TransferChecked {
                 from: self.vault.to_account_info(),
-                to: self.admin_ata.to_account_info(),
+                to: self.recovery.to_account_info(),
                 mint: self.mint.to_account_info(),
                 authority: self.config.to_account_info()
             },
