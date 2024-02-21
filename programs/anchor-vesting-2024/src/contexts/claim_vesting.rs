@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}};
+use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked, transfer_checked}};
 
 use crate::{errors::VestingError, state::{Config, Vesting}};
 
@@ -44,6 +44,32 @@ pub struct ClaimVesting<'info> {
 impl<'info> ClaimVesting<'info> {
     pub fn close_vesting(&mut self) -> Result<()> {
         self.config.vested = self.config.vested.checked_sub(self.vest.amount).ok_or(VestingError::Underflow)?;
-        Ok(())
+
+        // Binding to solve for lifetime issues
+        let seed = self.config.seed.to_le_bytes();
+        let bump = [self.config.bump];
+
+        let signer_seeds = [&
+            [
+                b"config", 
+                self.config.admin.as_ref(), 
+                self.config.mint.as_ref(), 
+                &seed,
+                &bump
+            ][..]
+        ];
+
+        let ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            TransferChecked {
+                from: self.vault.to_account_info(),
+                to: self.vester_ta.to_account_info(),
+                mint: self.mint.to_account_info(),
+                authority: self.config.to_account_info()
+            },
+            &signer_seeds
+        );
+
+        transfer_checked(ctx, self.vest.amount, self.mint.decimals)
     }
 }

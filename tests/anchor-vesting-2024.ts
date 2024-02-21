@@ -192,6 +192,16 @@ describe("anchor-vesting-2024", () => {
       .then(log);
   });
 
+  it("Finalizes the vest", async () => {
+    const tx = await program.methods
+      .finalize()
+      .accounts({...accounts})
+      .signers([admin])
+      .rpc()
+      .then(confirm)
+      .then(log);
+  });
+
   it("Deposits vesting tokens", async () => {
     const tx = new Transaction();
     tx.add(createTransferCheckedInstruction(
@@ -205,16 +215,6 @@ describe("anchor-vesting-2024", () => {
       TOKEN_2022_PROGRAM_ID
     ))
     await provider.sendAndConfirm(tx, [admin]).then(log);
-  });
-
-  it("Finalizes the vest", async () => {
-    const tx = await program.methods
-      .finalize()
-      .accounts({...accounts})
-      .signers([admin])
-      .rpc()
-      .then(confirm)
-      .then(log);
   });
 
   it("Claim a vest after activation", async () => {
