@@ -35,6 +35,7 @@ describe("anchor-vesting-2024", () => {
   const NOW = new BN(Math.floor(new Date().getTime() / 1000));
   const LATER = NOW.add(new BN(1000));
   const EVEN_LATER = LATER.add(new BN(1000));
+  const EVEN_LATER_AGAIN = EVEN_LATER.add(new BN(1000));
 
   const admin = Keypair.generate();
   const vester = Keypair.generate();
@@ -54,6 +55,7 @@ describe("anchor-vesting-2024", () => {
   const vestNow = PublicKey.findProgramAddressSync(
     [
       Buffer.from("vest"), 
+      config.toBuffer(),
       vesterTa.toBuffer(),
       NOW.toBuffer("le", 8)
     ],
@@ -63,6 +65,7 @@ describe("anchor-vesting-2024", () => {
   const vestLater = PublicKey.findProgramAddressSync(
     [
       Buffer.from("vest"), 
+      config.toBuffer(),
       vesterTa.toBuffer(),
       LATER.toBuffer('le', 8)
     ],
@@ -72,8 +75,19 @@ describe("anchor-vesting-2024", () => {
   const vestEvenLater = PublicKey.findProgramAddressSync(
     [
       Buffer.from("vest"), 
+      config.toBuffer(),
       vesterTa.toBuffer(),
       EVEN_LATER.toBuffer('le', 8)
+    ],
+    program.programId
+  )[0];
+
+  const vestEvenLaterAgain = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("vest"), 
+      config.toBuffer(),
+      vesterTa.toBuffer(),
+      EVEN_LATER_AGAIN.toBuffer('le', 8)
     ],
     program.programId
   )[0];
@@ -178,7 +192,7 @@ describe("anchor-vesting-2024", () => {
         .then(log);
         throw new Error("Shouldn't have made it to here!")
       } catch(e) {
-        assert(e.error?.errorCode?.code === "VestingUnfinalized")
+        assert((e as anchor.AnchorError).error?.errorCode?.code === "VestingUnfinalized")
       }
   });
 
@@ -217,6 +231,34 @@ describe("anchor-vesting-2024", () => {
     await provider.sendAndConfirm(tx, [admin]).then(log);
   });
 
+  it("Fail to cancel a vest after finalization", async () => {
+    try {
+      const tx = await program.methods
+        .cancelVesting()
+        .accounts({...accounts, vest: vestEvenLater})
+        .signers([admin])
+        .rpc()
+        .then(confirm)
+        .then(log);
+    } catch(e) {
+      assert((e as anchor.AnchorError).error?.errorCode?.code === "VestingFinalized")
+    }
+  });
+
+  it("Fail to create a vest after finalize", async () => {
+    try {
+      const tx = await program.methods
+        .createVesting(EVEN_LATER_AGAIN, new BN(1337e6))
+        .accounts({...accounts, vest: vestEvenLaterAgain})
+        .signers([admin])
+        .rpc()
+        .then(confirm)
+        .then(log);
+      } catch(e) {
+        assert((e as anchor.AnchorError).error?.errorCode?.code === "VestingFinalized")
+      }
+  });
+
   it("Claim a vest after activation", async () => {
     const tx = await program.methods
       .claimVesting()
@@ -237,7 +279,7 @@ describe("anchor-vesting-2024", () => {
         .then(confirm)
         .then(log);
     } catch(e) {
-      assert(e.error?.errorCode?.code === "NotFullyVested")
+      assert((e as anchor.AnchorError).error?.errorCode?.code === "NotFullyVested")
     }
   });
 

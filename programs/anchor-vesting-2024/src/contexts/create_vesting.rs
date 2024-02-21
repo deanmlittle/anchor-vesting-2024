@@ -26,9 +26,8 @@ pub struct CreateVesting<'info> {
     #[account(
         init,
         payer = admin,
-        constraint = println!("{:?}", maturation.to_le_bytes()) == (),
         space = Vesting::INIT_SPACE,
-        seeds = [b"vest", vester_ta.key().as_ref(), maturation.to_le_bytes().as_ref()],
+        seeds = [b"vest", config.key().as_ref(), vester_ta.key().as_ref(), maturation.to_le_bytes().as_ref()],
         bump
     )]
     vest: Account<'info, Vesting>,
@@ -43,6 +42,7 @@ impl<'info> CreateVesting<'info> {
 
         self.vest.set_inner(Vesting {
             vester_ta: self.vester_ta.key(),
+            config: self.config.key(),
             amount,
             maturation,
             bump
